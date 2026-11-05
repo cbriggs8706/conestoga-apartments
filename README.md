@@ -18,13 +18,13 @@ pnpm build
 pnpm start
 ```
 
-Deploy to Vercel by importing this repository and selecting the Next.js preset. Vercel detects the pnpm lockfile. Other hosts supporting Next.js can use the commands above. No environment variables are required. This project has not been published or connected to a remote repository.
+Deploy to Vercel by importing this repository and selecting the Next.js preset. Vercel detects the pnpm lockfile. Other hosts supporting Next.js can use the commands above. No environment variables are required. The repository is connected to GitHub and deployed through Vercel.
 
 ## Updating property information
 
 Edit `src/app/page.tsx` to update rent, utilities, contacts, layout descriptions and neighborhood text. Contact buttons use `tel:` links; update both the visible number and link, including the mobile call bar. No contact form is included.
 
-The original starting rent ($900/month), utility estimate ($170/month), and contacts have been retained at the owner's request. Confirm them before launch. The screenshot did not provide a complete verified street address, so the map link searches for the property in Rupert and visitors are directed to call for exact directions.
+Current pricing: two-bedroom layouts A and B are $1,200/month; three-bedroom Layout C is $1,350/month with two bedrooms upstairs, one downstairs, and two bathrooms. The apartment deposit is $1,000. Pets weighing 15 lbs or less are welcome, with $50 monthly pet rent and a $500 non-refundable pet deposit. The address and directions link use 1120 Wagon Wheel Drive, Rupert, Idaho, behind Minidoka Hospital. The original utility estimate ($170/month) and contacts remain. Applications are requested by phone.
 
 Update search and social metadata in `src/app/layout.tsx`. Styles and mobile breakpoints are in `src/app/globals.css`. Original reference files remain in `reference/`; optimized WebP copies used by the site are in `public/images/`.
 
