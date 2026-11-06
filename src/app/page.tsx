@@ -18,11 +18,31 @@ const photos = [
  ["12194866_725176750920559_1579930966571091005_o-584x438", "Kitchen breakfast bar"],
 ];
 
+type ArrowDirection = "up-right" | "down" | "up" | "left" | "right";
+
+function Arrow({ direction = "up-right" }: { direction?: ArrowDirection }) {
+ const rotation = { "up-right": -45, down: 90, up: -90, left: 180, right: 0 }[direction];
+ return <svg className="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14m-6-6 6 6-6 6" transform={`rotate(${rotation} 12 12)`} /></svg>;
+}
+
 export default function Home() {
  const [menu, setMenu] = useState(false);
  const [selected, setSelected] = useState<number | null>(null);
  const dialog = useRef<HTMLDialogElement>(null);
- useEffect(() => { if (selected !== null) dialog.current?.showModal(); else dialog.current?.close(); }, [selected]);
+ const openPhoto = (index: number) => {
+  setSelected(index);
+  dialog.current?.showModal();
+ };
+ const closePhoto = () => {
+  dialog.current?.close();
+  setSelected(null);
+ };
+ useEffect(() => {
+  if (selected === null) return;
+  const previousOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
+  return () => { document.body.style.overflow = previousOverflow; };
+ }, [selected]);
  return <>
   <a className="skip" href="#main">Skip to content</a>
   <header className="header">
@@ -30,14 +50,14 @@ export default function Home() {
    <button className="menu-toggle" aria-expanded={menu} aria-controls="navigation" onClick={() => setMenu(!menu)}>{menu ? "Close ✕" : "Menu ☰"}</button>
    <nav id="navigation" className={menu ? "navigation open" : "navigation"} aria-label="Main navigation">
     {[["The apartments", "apartments"], ["Neighborhood", "neighborhood"], ["Gallery", "gallery"]].map(([label, id]) => <a key={id} href={`#${id}`} onClick={() => setMenu(false)}>{label}</a>)}
-    <a className="button small" href="#contact" onClick={() => setMenu(false)}>Call for an application <span>↗</span></a>
+    <a className="button small" href="#contact" onClick={() => setMenu(false)}>Call for an application <Arrow /></a>
    </nav>
   </header>
   <main id="main">
    <section className="hero">
     <Image src="/images/house2.webp" alt="Conestoga Apartments exterior with covered parking and a green lawn" fill priority sizes="100vw" className="hero-image" />
     <div className="hero-shade" />
-    <div className="hero-content"><p className="eyebrow light">A PLACE TO LAND. A PLACE TO BELONG.</p><h1>A little more space.<br/>A lot more home.</h1><p>Comfortable two- and three-bedroom apartments.<br/>Small-town living in Rupert, Idaho.</p><a href="#apartments" className="button cream">Explore your next home <span>↓</span></a></div>
+    <div className="hero-content"><p className="eyebrow light">A PLACE TO LAND. A PLACE TO BELONG.</p><h1>A little more space.<br/>A lot more home.</h1><p>Comfortable two- and three-bedroom apartments.<br/>Small-town living in Rupert, Idaho.</p><a href="#apartments" className="button cream">Explore your next home <Arrow direction="down" /></a></div>
     <div className="hero-caption"><span>CONESTOGA APARTMENTS</span><span>Rooted in Rupert.</span></div>
    </section>
    <section id="apartments" className="section apartments">
@@ -47,12 +67,24 @@ export default function Home() {
     <div className="layouts"><div><span className="layout-label">LAYOUT A · 2 BEDROOMS · 2 BATHROOMS</span><h3>A bedroom on each floor.</h3><p className="layout-price">$1,200 <span>/ month</span></p><p>980 square feet. One bedroom on each level. The downstairs bathroom features a taller toilet and walk-in shower.</p></div><div><span className="layout-label">LAYOUT B · 2 BEDROOMS · 2 BATHROOMS</span><h3>Bedrooms together downstairs.</h3><p className="layout-price">$1,200 <span>/ month</span></p><p>980 square feet. Both bedrooms are located downstairs. Both bathrooms feature tub-shower combinations.</p></div><div><span className="layout-label">LAYOUT C · 3 BEDROOMS · 2 BATHROOMS</span><h3>A little extra room.</h3><p className="layout-price">$1,350 <span>/ month</span></p><p>Two bedrooms upstairs and one bedroom downstairs, with two bathrooms.</p></div></div>
     <div className="rental-details"><div><p className="eyebrow">A PLACE FOR YOU AND YOUR PET</p><h3>Small pets. Warm welcomes.</h3><p>Pet friendly for pets weighing 15 lbs or less.</p></div><dl><div><dt>Apartment deposit</dt><dd>$1,000</dd></div><div><dt>Monthly pet rent</dt><dd>$50 / month</dd></div><div><dt>Non-refundable pet deposit</dt><dd>$500</dd></div></dl></div>
    </section>
-   <section id="neighborhood" className="neighborhood"><div className="neighborhood-image"><Image src="/images/house1.webp" alt="Front entrance of the apartments on a sunny day in Rupert" fill sizes="(max-width: 700px) 100vw, 60vw" /></div><div className="neighborhood-copy"><p className="eyebrow">SMALL TOWN. GOOD COMPANY.</p><h2>Right at home <br/>in Rupert.</h2><p>Find us at 1120 Wagon Wheel Drive, behind Minidoka Hospital in Rupert. Enjoy the Mini-Cassia area, with two community parks within walking distance. The Wilson Theatre is close to Conestoga Apartments, with dinner theaters, plays and other events.</p><a className="text-link" href="https://www.google.com/maps/search/?api=1&query=1120+Wagon+Wheel+Drive+Rupert+Idaho" target="_blank" rel="noreferrer">Get directions <span>↗</span></a><p className="map-note">1120 Wagon Wheel Drive · Rupert, Idaho</p></div></section>
-   <section id="gallery" className="section gallery"><div className="gallery-heading"><div><p className="eyebrow">TAKE A LOOK AROUND</p><h2>Picture life here.</h2></div><p>A closer look at the spaces<br/>you’ll call your own.</p></div><div className="photo-grid">{photos.map(([file, label], i) => <button key={file} onClick={() => setSelected(i)} aria-label={`View photo: ${label}`}><Image src={`/images/${file}.webp`} alt={label} fill sizes="(max-width: 600px) 50vw, (max-width: 1000px) 33vw, 25vw" /><span>{label} <b>↗</b></span></button>)}</div><p className="gallery-note">Photos from the original property website. Features and finishes may vary by apartment.</p></section>
-   <section id="contact" className="contact"><div><p className="eyebrow light">YOUR NEXT CHAPTER STARTS HERE</p><h2>Come see it<br/>for yourself.</h2><p>Walk-throughs are by appointment only.<br/>Call for an application, ask about availability, or arrange a tour.</p></div><div className="contact-people"><a href="tel:+12083000129"><span>Cecilia <small>OWNER</small></span><strong>208-300-0129 <b>↗</b></strong></a><a href="tel:+12082196200"><span>Brooke <small>SE HABLA ESPAÑOL</small></span><strong>208-219-6200 <b>↗</b></strong></a><p>Call for an application. We’d love to help you find your next home.</p></div></section>
+   <section id="neighborhood" className="neighborhood"><div className="neighborhood-image"><Image src="/images/house1.webp" alt="Front entrance of the apartments on a sunny day in Rupert" fill sizes="(max-width: 700px) 100vw, 60vw" /></div><div className="neighborhood-copy"><p className="eyebrow">SMALL TOWN. GOOD COMPANY.</p><h2>Right at home <br/>in Rupert.</h2><p>Find us at 1120 Wagon Wheel Drive, behind Minidoka Hospital in Rupert. Enjoy the Mini-Cassia area, with two community parks within walking distance. The Wilson Theatre is close to Conestoga Apartments, with dinner theaters, plays and other events.</p><a className="text-link" href="https://www.google.com/maps/search/?api=1&query=1120+Wagon+Wheel+Drive+Rupert+Idaho" target="_blank" rel="noreferrer">Get directions <Arrow /></a><p className="map-note">1120 Wagon Wheel Drive · Rupert, Idaho</p></div></section>
+   <section id="gallery" className="section gallery"><div className="gallery-heading"><div><p className="eyebrow">TAKE A LOOK AROUND</p><h2>Picture life here.</h2></div><p>A closer look at the spaces<br/>you’ll call your own.</p></div><div className="photo-grid">{photos.map(([file, label], i) => <button key={file} type="button" onClick={() => openPhoto(i)} aria-haspopup="dialog" aria-label={`View photo: ${label}`}><Image src={`/images/${file}.webp`} alt={label} fill sizes="(max-width: 600px) 50vw, (max-width: 1000px) 33vw, 25vw" /><span>{label} <Arrow /></span></button>)}</div><p className="gallery-note">Photos from the original property website. Features and finishes may vary by apartment.</p></section>
+   <section id="contact" className="contact"><div><p className="eyebrow light">YOUR NEXT CHAPTER STARTS HERE</p><h2>Come see it<br/>for yourself.</h2><p>Walk-throughs are by appointment only.<br/>Call for an application, ask about availability, or arrange a tour.</p></div><div className="contact-people"><a href="tel:+12083000129"><span>Cecilia <small>OWNER</small></span><strong>208-300-0129 <Arrow /></strong></a><a href="tel:+12082196200"><span>Brooke <small>SE HABLA ESPAÑOL</small></span><strong>208-219-6200 <Arrow /></strong></a><p>Call for an application. We’d love to help you find your next home.</p></div></section>
   </main>
-  <footer><a className="footer-brand" href="#">Conestoga Apartments</a><span>1120 Wagon Wheel Drive · Rupert, Idaho</span><small>© {new Date().getFullYear()} Conestoga Apartments</small><a href="#">Back to top ↑</a></footer>
-  <a className="mobile-call" href="tel:+12083000129">Call for an application <span>↗</span></a>
-  <dialog ref={dialog} onCancel={() => setSelected(null)} onClick={e => { if(e.target === e.currentTarget) setSelected(null); }} aria-label="Apartment photo gallery"><div className="lightbox"><button className="close-photo" onClick={() => setSelected(null)} autoFocus>Close ✕</button>{selected !== null && <><Image src={`/images/${photos[selected][0]}.webp`} alt={photos[selected][1]} width={1168} height={876} /><div className="photo-controls"><button onClick={() => setSelected((selected + photos.length - 1) % photos.length)} aria-label="Previous photo">←</button><span>{photos[selected][1]} · {selected + 1} / {photos.length}</span><button onClick={() => setSelected((selected + 1) % photos.length)} aria-label="Next photo">→</button></div></>}</div></dialog>
+  <footer><a className="footer-brand" href="#">Conestoga Apartments</a><span>1120 Wagon Wheel Drive · Rupert, Idaho</span><small>© {new Date().getFullYear()} Conestoga Apartments</small><a href="#">Back to top <Arrow direction="up" /></a></footer>
+  <a className="mobile-call" href="tel:+12083000129">Call for an application <Arrow /></a>
+  <dialog className="gallery-dialog" ref={dialog} onCancel={closePhoto} onClose={() => setSelected(null)} onKeyDown={e => {
+   if (selected === null) return;
+   if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    e.preventDefault();
+    setSelected((selected + (e.key === "ArrowRight" ? 1 : photos.length - 1)) % photos.length);
+   }
+  }} aria-label="Apartment photo gallery">
+   {selected !== null && <div className="lightbox">
+    <div className="lightbox-header"><span>PHOTO GALLERY · {selected + 1} / {photos.length}</span><button type="button" className="close-photo" onClick={closePhoto} autoFocus>Close <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button></div>
+    <div className="lightbox-image"><Image src={`/images/${photos[selected][0]}.webp`} alt={photos[selected][1]} fill sizes="100vw" /></div>
+    <div className="photo-controls"><button type="button" onClick={() => setSelected((selected + photos.length - 1) % photos.length)} aria-label="Previous photo"><Arrow direction="left" /></button><p aria-live="polite">{photos[selected][1]}</p><button type="button" onClick={() => setSelected((selected + 1) % photos.length)} aria-label="Next photo"><Arrow direction="right" /></button></div>
+   </div>}
+  </dialog>
  </>;
 }
