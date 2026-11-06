@@ -70,3 +70,12 @@ footer>a:last-child{display:inline-flex;align-items:center;gap:8px}
 .gallery-dialog .photo-controls button{display:flex;align-items:center;justify-content:center;min-width:52px;min-height:52px;padding:14px;border-color:#84978c;color:inherit}
 .gallery-dialog button:hover{background:#ffffff15}
 @media(max-width:700px){.gallery-dialog .lightbox{padding:max(16px,env(safe-area-inset-top)) 16px max(20px,env(safe-area-inset-bottom));gap:12px}.lightbox-header{font-size:12px;letter-spacing:.02em}.gallery-dialog .photo-controls{font-size:16px;gap:12px}}
+
+/* Silent tour behind the homepage introduction. */
+.hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none;opacity:0;transition:opacity .6s ease}
+.hero-video-toggle{position:absolute;right:5%;bottom:68px;min-height:44px;padding:10px 16px;border:1px solid #ffffff99;background:#12251ebf;color:white;font-size:14px}
+.hero-video-toggle:hover{background:#12251e}
+@media(max-width:700px){.hero-video-toggle{right:7%;top:20px;bottom:auto}}
+
+.hero-video.is-ready{opacity:1}
+@media(prefers-reduced-motion:reduce){.hero-video{transition:none}}

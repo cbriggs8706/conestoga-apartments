@@ -27,6 +27,38 @@ function Arrow({ direction = "up-right" }: { direction?: ArrowDirection }) {
 
 export default function Home() {
  const [menu, setMenu] = useState(false);
+ const [showVideo, setShowVideo] = useState(false);
+ const [videoPlaying, setVideoPlaying] = useState(false);
+ const [videoReady, setVideoReady] = useState(false);
+ const heroVideo = useRef<HTMLVideoElement>(null);
+ useEffect(() => {
+  const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  let startTimer: ReturnType<typeof setTimeout> | undefined;
+  const updatePreference = () => {
+   clearTimeout(startTimer);
+   setVideoReady(false);
+   if (preference.matches || connection?.saveData) {
+    setShowVideo(false);
+    return;
+   }
+   // A bounded delay gives the still image a head start without waiting on
+   // unrelated page requests (which can remain pending in development).
+   startTimer = setTimeout(() => setShowVideo(true), 350);
+  };
+  updatePreference();
+  preference.addEventListener("change", updatePreference);
+  return () => {
+   clearTimeout(startTimer);
+   preference.removeEventListener("change", updatePreference);
+  };
+ }, []);
+ useEffect(() => {
+  const video = heroVideo.current;
+  if (!showVideo || !video) return;
+  video.muted = true;
+  void video.play().catch(() => setVideoPlaying(false));
+ }, [showVideo]);
  const [selected, setSelected] = useState<number | null>(null);
  const dialog = useRef<HTMLDialogElement>(null);
  const openPhoto = (index: number) => {
@@ -55,20 +87,30 @@ export default function Home() {
   </header>
   <main id="main">
    <section className="hero">
-    <Image src="/images/house2.webp" alt="Conestoga Apartments exterior with covered parking and a green lawn" fill priority sizes="100vw" className="hero-image" />
+    <Image src="/images/ai-enhanced-v1/house2.webp" alt="Conestoga Apartments exterior with covered parking and a green lawn" fill priority sizes="100vw" className="hero-image" />
+    {showVideo && <video ref={heroVideo} className={`hero-video${videoReady ? " is-ready" : ""}`} autoPlay muted loop playsInline preload="auto" aria-hidden="true" onPlaying={() => { setVideoReady(true); setVideoPlaying(true); }} onPause={() => setVideoPlaying(false)} onError={() => { setVideoReady(false); setVideoPlaying(false); }}>
+     <source src="/videos/apartment-tour-mobile.mp4" type="video/mp4" media="(max-width: 700px)" />
+     <source src="/videos/apartment-tour.mp4" type="video/mp4" />
+    </video>}
     <div className="hero-shade" />
     <div className="hero-content"><p className="eyebrow light">A PLACE TO LAND. A PLACE TO BELONG.</p><h1>A little more space.<br/>A lot more home.</h1><p>Comfortable two- and three-bedroom apartments.<br/>Small-town living in Rupert, Idaho.</p><a href="#apartments" className="button cream">Explore your next home <Arrow direction="down" /></a></div>
     <div className="hero-caption"><span>CONESTOGA APARTMENTS</span><span>Rooted in Rupert.</span></div>
+    {showVideo && <button type="button" className="hero-video-toggle" onClick={() => {
+     const video = heroVideo.current;
+     if (!video) return;
+     if (video.paused) void video.play().catch(() => setVideoPlaying(false));
+     else video.pause();
+    }}>{videoPlaying ? "Pause video" : "Play video"}</button>}
    </section>
    <section id="apartments" className="section apartments">
     <div className="section-intro"><div><p className="eyebrow">ROOM FOR EVERYDAY LIFE</p><h2>Settle in.<br/>Spread out.</h2></div><div className="intro-copy"><p>Two floors. Thoughtful features. A place to make your own. Our apartments share the same everyday comforts, with a choice of layouts to fit the way you live.</p><p className="price">From <strong>$1,200</strong> / month</p><small>Two bedrooms: $1,200/month · Three bedrooms: $1,350/month.</small></div></div>
     <div className="stats">{[["2–3", "Bedrooms"], ["02", "Bathrooms"], ["$1,000", "Deposit"], ["02", "Floors"]].map(([n,l]) => <div key={l}><strong>{n}</strong><span>{l}</span></div>)}</div>
-    <div className="home-details"><div className="detail-photo"><Image src="/images/12186850_725177030920531_5417882192989737953_o-1-584x438.webp" alt="Kitchen with wood cabinets, appliances and counter space" fill sizes="(max-width: 700px) 100vw, 50vw" /><span>Everyday comfort, built in.</span></div><div className="details-copy"><p className="eyebrow">THE LITTLE THINGS, TAKEN CARE OF</p><h3>Make yourself at home.</h3><div className="amenities">{["Washer", "Dryer", "Refrigerator", "Stove", "Parking", "Fenced deck"].map(a => <span key={a}><i>✓</i>{a}</span>)}</div><p className="muted">Built in 2015. Utilities are not included; the original estimate is approximately $170/month for gas, water, sewer, garbage and electricity. Please call to confirm current costs.</p></div></div>
+    <div className="home-details"><div className="detail-photo"><Image src="/images/ai-enhanced-v1/12186850_725177030920531_5417882192989737953_o-1-584x438.webp" alt="Kitchen with wood cabinets, appliances and counter space" fill sizes="(max-width: 700px) 100vw, 50vw" /><span>Everyday comfort, built in.</span></div><div className="details-copy"><p className="eyebrow">THE LITTLE THINGS, TAKEN CARE OF</p><h3>Make yourself at home.</h3><div className="amenities">{["Washer", "Dryer", "Refrigerator", "Stove", "Parking", "Fenced deck"].map(a => <span key={a}><i>✓</i>{a}</span>)}</div><p className="muted">Built in 2015. Utilities are not included; the original estimate is approximately $170/month for gas, water, sewer, garbage and electricity. Please call to confirm current costs.</p></div></div>
     <div className="layouts"><div><span className="layout-label">LAYOUT A · 2 BEDROOMS · 2 BATHROOMS</span><h3>A bedroom on each floor.</h3><p className="layout-price">$1,200 <span>/ month</span></p><p>980 square feet. One bedroom on each level. The downstairs bathroom features a taller toilet and walk-in shower.</p></div><div><span className="layout-label">LAYOUT B · 2 BEDROOMS · 2 BATHROOMS</span><h3>Bedrooms together downstairs.</h3><p className="layout-price">$1,200 <span>/ month</span></p><p>980 square feet. Both bedrooms are located downstairs. Both bathrooms feature tub-shower combinations.</p></div><div><span className="layout-label">LAYOUT C · 3 BEDROOMS · 2 BATHROOMS</span><h3>A little extra room.</h3><p className="layout-price">$1,350 <span>/ month</span></p><p>Two bedrooms upstairs and one bedroom downstairs, with two bathrooms.</p></div></div>
     <div className="rental-details"><div><p className="eyebrow">A PLACE FOR YOU AND YOUR PET</p><h3>Small pets. Warm welcomes.</h3><p>Pet friendly for pets weighing 15 lbs or less.</p></div><dl><div><dt>Apartment deposit</dt><dd>$1,000</dd></div><div><dt>Monthly pet rent</dt><dd>$50 / month</dd></div><div><dt>Non-refundable pet deposit</dt><dd>$500</dd></div></dl></div>
    </section>
-   <section id="neighborhood" className="neighborhood"><div className="neighborhood-image"><Image src="/images/house1.webp" alt="Front entrance of the apartments on a sunny day in Rupert" fill sizes="(max-width: 700px) 100vw, 60vw" /></div><div className="neighborhood-copy"><p className="eyebrow">SMALL TOWN. GOOD COMPANY.</p><h2>Right at home <br/>in Rupert.</h2><p>Find us at 1120 Wagon Wheel Drive, behind Minidoka Hospital in Rupert. Enjoy the Mini-Cassia area, with two community parks within walking distance. The Wilson Theatre is close to Conestoga Apartments, with dinner theaters, plays and other events.</p><a className="text-link" href="https://www.google.com/maps/search/?api=1&query=1120+Wagon+Wheel+Drive+Rupert+Idaho" target="_blank" rel="noreferrer">Get directions <Arrow /></a><p className="map-note">1120 Wagon Wheel Drive · Rupert, Idaho</p></div></section>
-   <section id="gallery" className="section gallery"><div className="gallery-heading"><div><p className="eyebrow">TAKE A LOOK AROUND</p><h2>Picture life here.</h2></div><p>A closer look at the spaces<br/>you’ll call your own.</p></div><div className="photo-grid">{photos.map(([file, label], i) => <button key={file} type="button" onClick={() => openPhoto(i)} aria-haspopup="dialog" aria-label={`View photo: ${label}`}><Image src={`/images/${file}.webp`} alt={label} fill sizes="(max-width: 600px) 50vw, (max-width: 1000px) 33vw, 25vw" /><span>{label} <Arrow /></span></button>)}</div><p className="gallery-note">Photos from the original property website. Features and finishes may vary by apartment.</p></section>
+   <section id="neighborhood" className="neighborhood"><div className="neighborhood-image"><Image src="/images/ai-enhanced-v1/house1.webp" alt="Front entrance of the apartments on a sunny day in Rupert" fill sizes="(max-width: 700px) 100vw, 60vw" /></div><div className="neighborhood-copy"><p className="eyebrow">SMALL TOWN. GOOD COMPANY.</p><h2>Right at home <br/>in Rupert.</h2><p>Find us at 1120 Wagon Wheel Drive, behind Minidoka Hospital in Rupert. Enjoy the Mini-Cassia area, with two community parks within walking distance. The Wilson Theatre is close to Conestoga Apartments, with dinner theaters, plays and other events.</p><a className="text-link" href="https://www.google.com/maps/search/?api=1&query=1120+Wagon+Wheel+Drive+Rupert+Idaho" target="_blank" rel="noreferrer">Get directions <Arrow /></a><p className="map-note">1120 Wagon Wheel Drive · Rupert, Idaho</p></div></section>
+   <section id="gallery" className="section gallery"><div className="gallery-heading"><div><p className="eyebrow">TAKE A LOOK AROUND</p><h2>Picture life here.</h2></div><p>A closer look at the spaces<br/>you’ll call your own.</p></div><div className="photo-grid">{photos.map(([file, label], i) => <button key={file} type="button" onClick={() => openPhoto(i)} aria-haspopup="dialog" aria-label={`View photo: ${label}`}><Image src={`/images/ai-enhanced-v1/${file}.webp`} alt={label} fill sizes="(max-width: 600px) 50vw, (max-width: 1000px) 33vw, 25vw" /><span>{label} <Arrow /></span></button>)}</div><p className="gallery-note">Photos from the original property website. Features and finishes may vary by apartment.</p></section>
    <section id="contact" className="contact"><div><p className="eyebrow light">YOUR NEXT CHAPTER STARTS HERE</p><h2>Come see it<br/>for yourself.</h2><p>Walk-throughs are by appointment only.<br/>Call for an application, ask about availability, or arrange a tour.</p></div><div className="contact-people"><a href="tel:+12083000129"><span>Cecilia <small>OWNER</small></span><strong>208-300-0129 <Arrow /></strong></a><a href="tel:+12082196200"><span>Brooke <small>SE HABLA ESPAÑOL</small></span><strong>208-219-6200 <Arrow /></strong></a><p>Call for an application. We’d love to help you find your next home.</p></div></section>
   </main>
   <footer><a className="footer-brand" href="#">Conestoga Apartments</a><span>1120 Wagon Wheel Drive · Rupert, Idaho</span><small>© {new Date().getFullYear()} Conestoga Apartments</small><a href="#">Back to top <Arrow direction="up" /></a></footer>
@@ -82,7 +124,7 @@ export default function Home() {
   }} aria-label="Apartment photo gallery">
    {selected !== null && <div className="lightbox">
     <div className="lightbox-header"><span>PHOTO GALLERY · {selected + 1} / {photos.length}</span><button type="button" className="close-photo" onClick={closePhoto} autoFocus>Close <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button></div>
-    <div className="lightbox-image"><Image src={`/images/${photos[selected][0]}.webp`} alt={photos[selected][1]} fill sizes="100vw" /></div>
+    <div className="lightbox-image"><Image src={`/images/ai-enhanced-v1/${photos[selected][0]}.webp`} alt={photos[selected][1]} fill sizes="100vw" /></div>
     <div className="photo-controls"><button type="button" onClick={() => setSelected((selected + photos.length - 1) % photos.length)} aria-label="Previous photo"><Arrow direction="left" /></button><p aria-live="polite">{photos[selected][1]}</p><button type="button" onClick={() => setSelected((selected + 1) % photos.length)} aria-label="Next photo"><Arrow direction="right" /></button></div>
    </div>}
   </dialog>
